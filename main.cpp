@@ -5,13 +5,14 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 
-#define degreesToRadians(x) x*(3.141592f/180.0f)
+#define degToRad(x) x*(3.141592f/180.0f)
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 using namespace glm;
 
 #include "shader.h"
+#include "input_utils.h"
 
 //****************************************************
 // Global variables
@@ -23,8 +24,9 @@ GLuint programID;
 GLuint VertexArrayID;
 GLuint vertexbuffer;
 GLuint colorbuffer;
+
 GLuint MatrixID;
-glm::mat4 MVP;
+mat4 MVP;
 
 
 //****************************************************
@@ -37,6 +39,20 @@ void renderScene() {
 
     // Use our shader
     glUseProgram(programID);
+
+    // Projection matrix : 45° fov, 4:3 ratio, display range : 0.1-100 units
+    mat4 Projection = glm::perspective(degToRad(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
+        
+    // Camera matrix
+    mat4 View = glm::lookAt(
+                                 glm::vec3(4,3,-3), // Camera is at (4,3,3)
+                                 glm::vec3(0,0,0), // and looks at the origin
+                                 glm::vec3(0,1,0)  // Head is up
+                                 );
+    // Model matrix : an identity matrix (model will be at the origin)
+    mat4 Model = getModelMat();
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    MVP = Projection * View * Model;
 
     // Send our transformation to the currently bound shader, 
     // in the "MVP" uniform
@@ -52,7 +68,13 @@ void renderScene() {
     glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*) 0);
 
-    // Draw the triangle !
+    if (isWireFrame()) {
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    } else {
+        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+    }
+    
+    // Draw the triangle
     glDrawArrays(GL_TRIANGLES, 0, 12*3);
 
     glDisableVertexAttribArray(0);
@@ -63,21 +85,7 @@ void renderScene() {
 
 
 void windowResize(int w, int h) {
-    // check for division by zero
-    if (h == 0) h = 1;
-    float ratio = (float) w / (float) h;
-
-    // reset our current projection matrix
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    // reset the viewport dimensions
-    glViewport(0,0,w,h);
-    // set perspective (fov angle, aspect ratio, zNear, zFar)
-    gluPerspective(45, ratio, 1, 1000);
-
-    // return to the model view (for camera and transforming objs)
-    glMatrixMode(GL_MODELVIEW);
+    /* Don't change the viewport */
 }
 
 
@@ -101,6 +109,11 @@ int main(int argc, char **argv) {
     // register callbacks
     glutDisplayFunc(renderScene);
     glutReshapeFunc(windowResize);
+    glutIdleFunc(renderScene);
+
+    // user input processing
+    glutKeyboardFunc(normalKeys);
+    glutSpecialFunc(specialKeys);
 
     // Initialize GLEW
     glewExperimental = GL_TRUE;
@@ -116,20 +129,6 @@ int main(int argc, char **argv) {
 
     // Get a handle for our "MVP" uniform
     MatrixID = glGetUniformLocation(programID, "MVP");
-
-    // Projection matrix : 45° fov, 4:3 ratio, display range : 0.1-100 units
-    glm::mat4 Projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
-        
-    // Camera matrix
-    glm::mat4 View = glm::lookAt(
-                                 glm::vec3(4,3,-3), // Camera is at (4,3,3)
-                                 glm::vec3(0,0,0), // and looks at the origin
-                                 glm::vec3(0,1,0)  // Head is up
-                                 );
-    // Model matrix : an identity matrix (model will be at the origin)
-    glm::mat4 Model = glm::mat4(1.0f);
-    // Our ModelViewProjection : multiplication of our 3 matrices
-    MVP = Projection * View * Model;
 
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);

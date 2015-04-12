@@ -2,7 +2,7 @@ CC = g++
 CFLAGS = -g -DGL_GLEXT_PROTOTYPES -Iglut-3.7.6-bin
 LDFLAGS = -lglut -lGLU -lGL -lGLEW
 
-FILES = shader.cpp
+FILES = shader.cpp input_utils.cpp
 
 RM = /bin/rm -f 
 
