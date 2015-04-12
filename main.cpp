@@ -1,77 +1,118 @@
+#include <stdio.h>
+#include <string.h>
+
+#include <GL/glew.h>
 #include <GL/glut.h>
-#include <GL/glu.h>
+#include <GL/freeglut.h>
+
+#include "shader.h"
 
 //****************************************************
-// Global Variables
+// Global variables
 //****************************************************
+int windowWidth = 500;
+int windowHeight = 500;
 
-// Initalize the viewport size
-int width = 500;
-int height = 500;
+GLuint programID;
+GLuint VertexArrayID;
+GLuint vertexbuffer;
 
 
 //****************************************************
-// reshape viewport if the window is resized
+// Callback Functions
 //****************************************************
-void myReshape(int w, int h) {
-  width = w;
-  height = h;
+void renderScene() {
 
-  glViewport (0,0,width,height);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluOrtho2D(0, width, 0, height);
+    // clear the screen
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Use our shader
+    glUseProgram(programID);
+
+    // 1rst attribute buffer : vertices
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+    // Draw the triangle !
+    glDrawArrays(GL_TRIANGLES, 0, 3); //3 indices starting at 0->1 triangle
+
+    glDisableVertexAttribArray(0);
+
+    // swap buffers
+    glutSwapBuffers();
+}
+
+
+void windowResize(int w, int h) {
+    // check for division by zero
+    if (h == 0) h = 1;
+    float ratio = (float) w / (float) h;
+
+    // reset our current projection matrix
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    // reset the viewport dimensions
+    glViewport(0,0,w,h);
+    // set perspective (fov angle, aspect ratio, zNear, zFar)
+    gluPerspective(45, ratio, 1, 1000);
+
+    // return to the model view (for camera and transforming objs)
+    glMatrixMode(GL_MODELVIEW);
 }
 
 
 //****************************************************
-// function that does the actual drawing of stuff
-//***************************************************
-void myDisplay() {
-
-    glClear(GL_COLOR_BUFFER_BIT);    // clear the color buffer
-    glMatrixMode(GL_MODELVIEW);      // specifying camera transforms
-
-    glLoadIdentity();	             // make sure transformation is "zero'd"
-
-
-    // Start drawing
-    glBegin(GL_POINTS);
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
-            glColor3f((GLfloat) 0.2, (GLfloat) 0.0, (GLfloat) 0.2);
-            glVertex2f(x + 0.5, y + 0.5);
-        }
-    }
-    glEnd();
-
-    glFlush();
-    glutSwapBuffers();	             // swap buffers (double buffer)
-}
-
-
+// Program Start Point
 //****************************************************
-// our program start point
-//****************************************************
-int main(int argc, char *argv[]) {
+int main(int argc, char **argv) {
 
-    //This initializes glut
+    // initiate GLUT and create window
     glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 
-    //This tells glut to use a double-buffered window with red, green, and blue channels 
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    glutInitContextVersion(3, 3);
+    glutInitContextProfile(GLUT_CORE_PROFILE );
+    glutInitContextFlags(GLUT_DEBUG);
 
-    //The size and position of the window
-    glutInitWindowSize(width, height);
-    glutInitWindowPosition(0,0);
-    glutCreateWindow(argv[0]);
+    glutInitWindowPosition(0, 0);
+    glutInitWindowSize(windowWidth, windowHeight);
+    glutCreateWindow("CS184 Assignement 3: Bezier Surfaces");
 
-    glutDisplayFunc(myDisplay);
-    glutReshapeFunc(myReshape);	
+    // register callbacks
+    glutDisplayFunc(renderScene);
+    glutReshapeFunc(windowResize);
 
-    glutMainLoop();				   
+    // Initialize GLEW
+    glewExperimental = GL_TRUE;
+    glewInit();
+ 
+    // print context information
+    printf("Vendor: %s\n", glGetString (GL_VENDOR));
+    printf("Renderer: %s\n", glGetString (GL_RENDERER));
+    printf("Version: %s\n", glGetString (GL_VERSION));
+    printf("GLSL: %s\n", glGetString (GL_SHADING_LANGUAGE_VERSION));
 
-    return 0;
+    // Create and compile our GLSL program from the shaders
+    programID = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
+
+    glGenVertexArrays(1, &VertexArrayID);
+    glBindVertexArray(VertexArrayID);
+
+    static const GLfloat vertex_buffer_data[] = { 
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        0.0f,  1.0f, 0.0f,
+    };
+
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_buffer_data), vertex_buffer_data, GL_STATIC_DRAW);
+
+    // enter GLUT event processing loop
+    glutMainLoop();
+
+    return 1;
 
 }

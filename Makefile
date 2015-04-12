@@ -1,15 +1,15 @@
 CC = g++
 CFLAGS = -g -DGL_GLEXT_PROTOTYPES -Iglut-3.7.6-bin
-LDFLAGS = -lglut -lGLU -lGL
+LDFLAGS = -lglut -lGLU -lGL -lGLEW
 
-FILES = 
+FILES = shader.cpp
 
 RM = /bin/rm -f 
 
-all: main 
-main: main.o 
-	$(CC) $(CFLAGS) -o as3 main.o $(LDFLAGS) 
-main.o: main.cpp $(FILES)
-	$(CC) $(CFLAGS) -c main.cpp $(FILES) -o main.o 
+all: main
+
+main: clean main.cpp $(FILES)
+	$(CC) $(CFLAGS) -o as3 main.cpp $(FILES) $(LDFLAGS) 
+
 clean: 
 	$(RM) *.o *~ as3
