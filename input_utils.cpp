@@ -8,16 +8,17 @@
 bool wireframemode = false;
 bool flatshading = false;
 
-glm::mat4 modelMat = glm::mat4(1.0f);
+mat4 modelMat = mat4(1.0f);
 
 void normalKeys(unsigned char key, int x, int y) {
     if (key == 27) {
         exit(0);
-    } else if (key == 43) {
+    } else if (key == 61) {
         // '+' == 43, zoom in
+        modelMat = scale(modelMat, vec3(1.01, 1.01, 1.01));
     } else if (key == 45) {
         // '-' == 45, zoom out
-
+        modelMat = scale(modelMat, vec3(0.99, 0.99, 0.99));
     } else if (key == 99) {
         wireframemode = !wireframemode;
     } else if (key == 115) {
