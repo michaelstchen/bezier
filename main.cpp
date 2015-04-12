@@ -42,13 +42,8 @@ void renderScene() {
 
     // Projection matrix : 45° fov, 4:3 ratio, display range : 0.1-100 units
     mat4 Projection = glm::perspective(degToRad(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
-        
     // Camera matrix
-    mat4 View = glm::lookAt(
-                                 glm::vec3(4,3,-3), // Camera is at (4,3,3)
-                                 glm::vec3(0,0,0), // and looks at the origin
-                                 glm::vec3(0,1,0)  // Head is up
-                                 );
+    mat4 View = getViewMat();
     // Model matrix : an identity matrix (model will be at the origin)
     mat4 Model = getModelMat();
     // Our ModelViewProjection : multiplication of our 3 matrices

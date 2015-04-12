@@ -11,6 +11,7 @@ void normalKeys(unsigned char key, int x, int y);
 void specialKeys(int key, int x, int y);
 
 mat4 getModelMat();
+mat4 getViewMat();
 
 bool isWireFrame();
 bool isFlatShade();
