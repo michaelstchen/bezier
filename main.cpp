@@ -5,6 +5,12 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 
+#define degreesToRadians(x) x*(3.141592f/180.0f)
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+using namespace glm;
+
 #include "shader.h"
 
 //****************************************************
@@ -16,6 +22,8 @@ int windowHeight = 500;
 GLuint programID;
 GLuint VertexArrayID;
 GLuint vertexbuffer;
+GLuint MatrixID;
+glm::mat4 MVP;
 
 
 //****************************************************
@@ -28,6 +36,10 @@ void renderScene() {
 
     // Use our shader
     glUseProgram(programID);
+
+    // Send our transformation to the currently bound shader, 
+    // in the "MVP" uniform
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
     // 1rst attribute buffer : vertices
     glEnableVertexAttribArray(0);
@@ -95,7 +107,24 @@ int main(int argc, char **argv) {
     printf("GLSL: %s\n", glGetString (GL_SHADING_LANGUAGE_VERSION));
 
     // Create and compile our GLSL program from the shaders
-    programID = LoadShaders( "SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader" );
+    programID = LoadShaders( "VertexShader.vs", "FragmentShader.fs" );
+
+    // Get a handle for our "MVP" uniform
+    MatrixID = glGetUniformLocation(programID, "MVP");
+
+    // Projection matrix : 45° fov, 4:3 ratio, display range : 0.1-100 units
+    glm::mat4 Projection = glm::perspective(45.0f, 4.0f/3.0f, 0.1f, 100.0f);
+        
+    // Camera matrix
+    glm::mat4 View = glm::lookAt(
+                                 glm::vec3(4,3,3), // Camera is at (4,3,3)
+                                 glm::vec3(0,0,0), // and looks at the origin
+                                 glm::vec3(0,1,0)  // Head is up
+                                 );
+    // Model matrix : an identity matrix (model will be at the origin)
+    glm::mat4 Model = glm::mat4(1.0f);
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    MVP = Projection * View * Model;
 
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
