@@ -3,7 +3,7 @@
 
 #include <GL/glut.h>
 
-#include "input_utils.h"
+#include "keylistener.h"
 
 bool wireframemode = false;
 bool flatshading = false;

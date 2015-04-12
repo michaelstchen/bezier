@@ -1,5 +1,5 @@
-#ifndef INPUT_UTILS_H
-#define INPUT_UNTILS_H
+#ifndef KEYLISTENER_H
+#define KEYLISTENER_H
 
 #define degToRad(x) x*(3.141592f/180.0f)
 #define GLM_FORCE_RADIANS

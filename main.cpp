@@ -12,7 +12,8 @@
 using namespace glm;
 
 #include "shader.h"
-#include "input_utils.h"
+#include "keylistener.h"
+#include "mesh.h"
 
 //****************************************************
 // Global variables
