@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
     glBindVertexArray(VertexArrayID);
 
     // Read and load info for vertices
-    bool res = loadVertices(argv[1], vertices, normals);
+    bool res = loadVertices(argc, argv, vertices, normals);
 
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);

@@ -11,7 +11,7 @@
 #include <glm/gtx/vector_angle.hpp>
 using namespace glm;
 
-bool loadVertices(char* filename,
+bool loadVertices(int argc, char** argv,
                   std::vector<glm::vec3> & out_vertices,
                   std::vector<glm::vec3> & out_normals);
 

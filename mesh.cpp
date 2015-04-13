@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string>
 #include <cstring>
 
@@ -49,10 +50,10 @@ void bezpatchinterp(vector<vector< vec3 > > & p,
 }
                     
 /* uniform subdivision of a patch */
-void uniformSubdivision(vector<vector< vec3 > > & p,
+void uniformSubdivision(vector<vector< vec3 > > & p, float step,
                         vector<vec3> & out_v,
                         vector<vec3> & out_n) {
-    float step = 0.33;
+
     float numdiv = ((1.0f + 0.00001)/ step);
     vector<vector< vec3 > > temp_v;
     vector<vector< vec3 > > temp_n;
@@ -95,7 +96,15 @@ void uniformSubdivision(vector<vector< vec3 > > & p,
 }
 
 
-bool loadBEZ(char* filename,
+/* adaptive subdivision of a patch */
+void adaptiveSubdivision(vector<vector< vec3 > > & p, float param,
+                        vector<vec3> & out_v,
+                        vector<vec3> & out_n) {
+    
+}
+
+
+bool loadBEZ(char* filename, float param, char* a,
              vector<vec3> & out_vertices,
              vector<vec3> & out_normals) {
 
@@ -125,8 +134,12 @@ bool loadBEZ(char* filename,
                        &patch[i][2].x, &patch[i][2].y, &patch[i][2].z,
                        &patch[i][3].x, &patch[i][3].y, &patch[i][3].z);
             }
-            
-            uniformSubdivision(patch, out_vertices, out_normals);
+
+            if (a != NULL && strcmp(a, "-a") == 0) {
+                adaptiveSubdivision(patch, param, out_vertices, out_normals);
+            } else {
+                uniformSubdivision(patch, param, out_vertices, out_normals);
+            }
 
         }
 
@@ -137,9 +150,9 @@ bool loadBEZ(char* filename,
 
 
 bool loadOBJ(char* filename,
-                  vector<vec3> & out_vertices,
-                  vector<vec3> & out_normals) {
-
+             vector<vec3> & out_vertices,
+             vector<vec3> & out_normals) {
+    
     FILE* finput = fopen(filename, "r");
     if (finput == NULL) {
         fprintf(stderr, "ERROR: cannot open obj file '%s'\n", filename);
@@ -178,13 +191,20 @@ bool loadOBJ(char* filename,
 
 
 
-bool loadVertices(char* filename,
+bool loadVertices(int argc, char** argv,
                   vector<vec3> & out_vertices,
                   vector<vec3> & out_normals) {
+    char* filename = argv[1];
+
     if (strstr(filename, ".obj") != NULL) {
         return loadOBJ(filename, out_vertices, out_normals);
     } else if (strstr(filename, ".bez") != NULL) {
-        return loadBEZ(filename, out_vertices, out_normals);
+        float param = (float) atof(argv[2]);
+
+        char* a;
+        (argc > 3) ? a = argv[3] : a = NULL;
+
+        return loadBEZ(filename, param, a, out_vertices, out_normals);
     } else {
         fprintf(stderr, "ERROR: '%s' format not supported\n", filename);
         return false;
