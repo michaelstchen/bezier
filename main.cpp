@@ -24,8 +24,15 @@ int windowHeight = 600;
 
 GLuint programID;
 GLuint VertexArrayID;
+GLuint ViewMatrixID;
+GLuint ModelMatrixID;
+GLuint LightID;
+
 GLuint vertexbuffer;
 GLuint normalbuffer;
+
+std::vector< vec3 > vertices;
+std::vector< vec3 > normals;
 
 GLuint MatrixID;
 mat4 MVP;
@@ -54,6 +61,11 @@ void renderScene() {
     // Send our transformation to the currently bound shader, 
     // in the "MVP" uniform
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+    glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
+    glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
+
+    vec3 lightPos = vec3(4, 4, 4);
+    glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
     // 1st attribute buffer : vertices
     glEnableVertexAttribArray(0);
@@ -70,9 +82,11 @@ void renderScene() {
     } else {
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     }
+
+    glShadeModel(GL_SMOOTH);
     
     // Draw the triangle
-    glDrawArrays(GL_TRIANGLES, 0, 12*3);
+    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
@@ -122,27 +136,35 @@ int main(int argc, char **argv) {
     // Accept fragment if it closer to the camera than the former one
     glDepthFunc(GL_LESS); 
 
+    // Cull triangles which normal is not towards the camera
+    glEnable(GL_CULL_FACE);
+
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "VertexShader.vs", "FragmentShader.fs" );
 
     // Get a handle for our "MVP" uniform
     MatrixID = glGetUniformLocation(programID, "MVP");
+    ViewMatrixID = glGetUniformLocation(programID, "V");
+    ModelMatrixID = glGetUniformLocation(programID, "M");
 
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
     // Read and load info for vertices
-    std::vector< glm::vec3 > vertices;
-    std::vector< glm::vec3 > normals;
     bool res = loadVertices(argv[1], vertices, normals);
 
     glGenBuffers(1, &vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vec3), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
 
     glGenBuffers(1, &normalbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
     glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
+
+    // Get a handle for our "LightPosition" uniform
+    glUseProgram(programID);
+    LightID = glGetUniformLocation(programID,
+                                          "LightPosition_worldspace");
 
     // enter GLUT event processing loop
     glutMainLoop();
