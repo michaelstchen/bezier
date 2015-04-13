@@ -59,18 +59,22 @@ void uniformSubdivision(vector<vector< vec3 > > & p, float step,
     vector<vector< vec3 > > temp_n;
 
     for (float iu = 0; iu < numdiv; iu += 1.0f) {
+        
         float u = iu * step;
+        if (numdiv - iu < 1.0) u = 1.0f;
         
         vector<vec3> temp_rv;
         vector<vec3> temp_rn;
         for (float iv = 0; iv < numdiv; iv += 1.0f) {
             float v = iv * step;
+            if (numdiv - iv < 1.0) v = 1.0f;
             
             bezpatchinterp(p, u, v, out_v, out_n, temp_rv, temp_rn);
         }
 
         temp_v.push_back(temp_rv);
         temp_n.push_back(temp_rn);
+
     }
 
     for (int i = 0; i < temp_v.size() - 1; i++) {

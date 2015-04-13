@@ -38,27 +38,27 @@ void specialKeys(int key, int x, int y) {
 
     if (key == GLUT_KEY_RIGHT) {
         if (mod == GLUT_ACTIVE_SHIFT) {
-            modelMat = glm::translate(modelMat, 0.05f * right);
+            modelMat = glm::translate(modelMat, 0.1f * right);
         } else {
-            modelMat = glm::rotate(modelMat, degToRad(1.0f), up);
+            modelMat = glm::rotate(modelMat, degToRad(2.0f), up);
         }
     } else if (key == GLUT_KEY_LEFT) {
         if (mod == GLUT_ACTIVE_SHIFT) {
-            modelMat = glm::translate(modelMat, -0.05f * right);
+            modelMat = glm::translate(modelMat, -0.1f * right);
         } else {
-            modelMat = glm::rotate(modelMat, degToRad(-1.0f), up);
+            modelMat = glm::rotate(modelMat, degToRad(-2.0f), up);
         }
     } else if (key == GLUT_KEY_UP) {
         if (mod == GLUT_ACTIVE_SHIFT) {
-            modelMat = glm::translate(modelMat, 0.05f * up);
+            modelMat = glm::translate(modelMat, 0.1f * up);
         } else {
-            modelMat = glm::rotate(modelMat, degToRad(-1.0f), right);
+            modelMat = glm::rotate(modelMat, degToRad(-2.0f), right);
         }
     } else if (key == GLUT_KEY_DOWN) {
         if (mod == GLUT_ACTIVE_SHIFT) {
-            modelMat = glm::translate(modelMat, -0.05f * up);
+            modelMat = glm::translate(modelMat, -0.1f * up);
         } else {
-            modelMat = glm::rotate(modelMat, degToRad(1.0f), right);
+            modelMat = glm::rotate(modelMat, degToRad(2.0f), right);
         }
     }
 }
