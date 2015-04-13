@@ -64,7 +64,7 @@ void renderScene() {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 
-    vec3 lightPos = vec3(4, 4, 4);
+    vec3 lightPos = vec3(4, 3, -3);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
     // 1st attribute buffer : vertices
@@ -82,8 +82,6 @@ void renderScene() {
     } else {
         glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
     }
-
-    glShadeModel(GL_SMOOTH);
     
     // Draw the triangle
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
@@ -137,7 +135,7 @@ int main(int argc, char **argv) {
     glDepthFunc(GL_LESS); 
 
     // Cull triangles which normal is not towards the camera
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
 
     // Create and compile our GLSL program from the shaders
     programID = LoadShaders( "VertexShader.vs", "FragmentShader.fs" );
