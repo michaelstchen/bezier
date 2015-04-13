@@ -22,11 +22,9 @@ using namespace glm;
 int windowWidth = 800;
 int windowHeight = 600;
 
-GLuint programID;
+GLuint smoothprogram;
+GLuint flatprogram;
 GLuint VertexArrayID;
-GLuint ViewMatrixID;
-GLuint ModelMatrixID;
-GLuint LightID;
 
 GLuint vertexbuffer;
 GLuint normalbuffer;
@@ -34,7 +32,6 @@ GLuint normalbuffer;
 std::vector< vec3 > vertices;
 std::vector< vec3 > normals;
 
-GLuint MatrixID;
 mat4 MVP;
 
 
@@ -46,8 +43,17 @@ void renderScene() {
     // clear the screen
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Use our shader
+    // Choose shader
+    GLuint programID;
+    isFlatShade() ? programID = flatprogram : programID = smoothprogram;
     glUseProgram(programID);
+
+    // Get a handles
+    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+    GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
+    GLuint ModelMatrixID = glGetUniformLocation(programID, "M");
+    GLuint LightID = glGetUniformLocation(programID,
+                                          "LightPosition_worldspace");
 
     // Projection matrix : 45° fov, 4:3 ratio, display range : 0.1-100 units
     mat4 Projection = glm::perspective(degToRad(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
@@ -138,13 +144,10 @@ int main(int argc, char **argv) {
     //glEnable(GL_CULL_FACE);
 
     // Create and compile our GLSL program from the shaders
-    programID = LoadShaders("Shaders/SmoothVertex.vs",
+    smoothprogram = LoadShaders("Shaders/SmoothVertex.vs",
                             "Shaders/SmoothFragment.fs" );
-
-    // Get a handle for our "MVP" uniform
-    MatrixID = glGetUniformLocation(programID, "MVP");
-    ViewMatrixID = glGetUniformLocation(programID, "V");
-    ModelMatrixID = glGetUniformLocation(programID, "M");
+    flatprogram = LoadShaders("Shaders/FlatVertex.vs",
+                            "Shaders/FlatFragment.fs" );
 
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
@@ -159,11 +162,6 @@ int main(int argc, char **argv) {
     glGenBuffers(1, &normalbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, normalbuffer);
     glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals[0], GL_STATIC_DRAW);
-
-    // Get a handle for our "LightPosition" uniform
-    glUseProgram(programID);
-    LightID = glGetUniformLocation(programID,
-                                          "LightPosition_worldspace");
 
     // enter GLUT event processing loop
     glutMainLoop();
