@@ -138,7 +138,8 @@ int main(int argc, char **argv) {
     //glEnable(GL_CULL_FACE);
 
     // Create and compile our GLSL program from the shaders
-    programID = LoadShaders( "VertexShader.vs", "FragmentShader.fs" );
+    programID = LoadShaders("Shaders/SmoothVertex.vs",
+                            "Shaders/SmoothFragment.fs" );
 
     // Get a handle for our "MVP" uniform
     MatrixID = glGetUniformLocation(programID, "MVP");

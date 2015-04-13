@@ -1,5 +1,9 @@
 #version 330 core
 
+// Values that stay constant for the whole mesh.
+uniform mat4 MV;
+uniform vec3 LightPosition_worldspace;
+
 // Interpolated values from the vertex shaders
 in vec3 Position_worldspace;
 in vec3 Normal_cameraspace;
@@ -8,10 +12,6 @@ in vec3 LightDirection_cameraspace;
 
 // Ouput data
 out vec3 color;
-
-// Values that stay constant for the whole mesh.
-uniform mat4 MV;
-uniform vec3 LightPosition_worldspace;
 
 void main(){
 
