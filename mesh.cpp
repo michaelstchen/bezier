@@ -9,7 +9,7 @@ using namespace std;
 
 vector<vector< vec3 > > patch;
 float param;
-int count = 0;
+mat4 Bz;
 
 /* bezier curve interpretation using De Casteljau's algorithm */
 vec3 bezcurveinterp(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float u, vec3 & dPdu) {
@@ -113,13 +113,25 @@ void uniformSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
 }
 
 
+bool samePoint(vec3 & v0, vec3 & v1) {
+    if (v0.x == v1.x) {
+        if (v0.y == v1.y) {
+            if (v0.z == v1.z) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 void checkTriangle(vec3 a, vec3 b, vec3 c,
-                   float u_vals[], float v_vals[],
+                   float u_vals[], float v_vals[], int depth,
                    vector<vec3> & out_v, vector<vec3> & out_n) {
 
-    vec3 midAB = (a + b) * 0.5f;
-    vec3 midBC = (b + c) * 0.5f;
-    vec3 midCA = (c + a) * 0.5f;
+    vec3 midAB = (a + b) / 2.0f;
+    vec3 midBC = (b + c) / 2.0f;
+    vec3 midCA = (c + a) / 2.0f;
 
     float midAB_u = (u_vals[0] + u_vals[1]) / 2.0f;
     float midAB_v = (v_vals[0] + v_vals[1]) / 2.0f;
@@ -136,126 +148,142 @@ void checkTriangle(vec3 a, vec3 b, vec3 c,
     vec3 bezmidCA; vec3 beznormCA;
     bezpatchinterp(midCA_u, midCA_v, bezmidCA, beznormCA );
 
-    bool splitAB = glm::distance(midAB, bezmidAB) > param;
-    //printf("midAB: %f %f %f\tbezmidAB: %f %f %f\n\n", midAB.x, midAB.y, midAB.z, bezmidAB.x, bezmidAB.y, bezmidAB.z);
-    bool splitBC = glm::distance(midBC, bezmidBC) > param;
-    //printf("midBC: %f %f %f\tbezmidBC: %f %f %f\n\n", midBC.x, midBC.y, midBC.z, bezmidBC.x, bezmidBC.y, bezmidBC.z);
-    bool splitCA = glm::distance(midCA, bezmidCA) > param;
-    //printf("midCA: %f %f %f\tbezmidCA: %f %f %f\n\n", midCA.x, midCA.y, midCA.z, bezmidCA.x, bezmidCA.y, bezmidCA.z);
+    bool splitAB; bool splitBC; bool splitCA;
+    if (depth < 0) {
+        //printf("depth: %d\n", depth);
+        splitAB = false;
+        splitBC = false;
+        splitCA = false;
+    } else {
+        depth -= 1;
+        /*
+        splitAB = true;
+        splitBC = false;
+        splitCA = false;
+        */
+        splitAB = glm::length(midAB - bezmidAB) > param;
+        //printf("midAB: %f %f %f\tbezmidAB: %f %f %f\n", midAB.x, midAB.y, midAB.z, bezmidAB.x, bezmidAB.y, bezmidAB.z);
+        splitBC = glm::length(midBC - bezmidBC) > param;
+        //printf("midBC: %f %f %f\tbezmidBC: %f %f %f\n", midBC.x, midBC.y, midBC.z, bezmidBC.x, bezmidBC.y, bezmidBC.z);
+        splitCA = glm::length(midCA - bezmidCA) > param;
+        //printf("midCA: %f %f %f\tbezmidCA: %f %f %f\n", midCA.x, midCA.y, midCA.z, bezmidCA.x, bezmidCA.y, bezmidCA.z);
+    }
+
+    
 
     if (splitAB && splitBC && splitCA){
-
-        float u_vals1[3] = {u_vals[0], midAB_u, midCA_u};
-        float v_vals1[3] = {v_vals[0], midAB_v, midCA_v};
-        checkTriangle(a, bezmidAB, bezmidCA, u_vals1, v_vals1,
+        //printf("split AB, BC, CA\n\n");
+        float u_1[3] = {u_vals[0], midAB_u, midCA_u};
+        float v_1[3] = {v_vals[0], midAB_v, midCA_v};
+        checkTriangle(a, bezmidAB, bezmidCA, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[1], midBC_u, midAB_u};
-        float v_vals2[3] = {v_vals[1], midBC_v, midAB_v};
-        checkTriangle(b, bezmidBC, bezmidAB, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[1], midBC_u, midAB_u};
+        float v_2[3] = {v_vals[1], midBC_v, midAB_v};
+        checkTriangle(b, bezmidBC, bezmidAB, u_2, v_2, depth,
                       out_v, out_n);
 
-        float u_vals3[3] = {u_vals[2], midCA_u, midBC_u};
-        float v_vals3[3] = {v_vals[2], midCA_v, midBC_v};
-        checkTriangle(c, bezmidCA, bezmidBC, u_vals3, v_vals3,
+        float u_3[3] = {u_vals[2], midCA_u, midBC_u};
+        float v_3[3] = {v_vals[2], midCA_v, midBC_v};
+        checkTriangle(c, bezmidCA, bezmidBC, u_3, v_3, depth,
                       out_v, out_n);
 
-        float u_vals4[3] = {midAB_u, midBC_u, midCA_u};
-        float v_vals4[3] = {midAB_v, midBC_v, midCA_v};
-        checkTriangle(bezmidAB, bezmidBC, bezmidCA, u_vals4, v_vals4,
+        float u_4[3] = {midAB_u, midBC_u, midCA_u};
+        float v_4[3] = {midAB_v, midBC_v, midCA_v};
+        checkTriangle(bezmidAB, bezmidBC, bezmidCA, u_4, v_4, depth,
                       out_v, out_n);
         
     } else if (splitAB && splitBC) {
-
-        float u_vals1[3] = {u_vals[1], midBC_u, midAB_u};
-        float v_vals1[3] = {v_vals[1], midBC_v, midAB_v};
-        checkTriangle(b, bezmidBC, bezmidAB, u_vals1, v_vals1,
+        //printf("split AB, BC\n\n");
+        float u_1[3] = {u_vals[1], midBC_u, midAB_u};
+        float v_1[3] = {v_vals[1], midBC_v, midAB_v};
+        checkTriangle(b, bezmidBC, bezmidAB, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[2], midAB_u, midBC_u};
-        float v_vals2[3] = {v_vals[2], midAB_v, midBC_v};
-        checkTriangle(c, bezmidAB, bezmidBC, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[2], midAB_u, midBC_u};
+        float v_2[3] = {v_vals[2], midAB_v, midBC_v};
+        checkTriangle(c, bezmidAB, bezmidBC, u_2, v_2, depth,
                       out_v, out_n);
 
-        float u_vals3[3] = {u_vals[0], midAB_u, u_vals[2]};
-        float v_vals3[3] = {v_vals[0], midAB_v, v_vals[2]};
-        checkTriangle(a, bezmidAB, c, u_vals3, v_vals3,
+        float u_3[3] = {u_vals[0], midAB_u, u_vals[2]};
+        float v_3[3] = {v_vals[0], midAB_v, v_vals[2]};
+        checkTriangle(a, bezmidAB, c, u_3, v_3, depth,
                       out_v, out_n);
 
     } else if (splitBC && splitCA) {
-
-        float u_vals1[3] = {u_vals[2], midCA_u, midBC_u};
-        float v_vals1[3] = {v_vals[2], midCA_v, midBC_v};
-        checkTriangle(c, bezmidCA, bezmidBC, u_vals1, v_vals1,
+        //printf("split BC, CA\n\n");
+        float u_1[3] = {u_vals[2], midCA_u, midBC_u};
+        float v_1[3] = {v_vals[2], midCA_v, midBC_v};
+        checkTriangle(c, bezmidCA, bezmidBC, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[0], midBC_u, midCA_u};
-        float v_vals2[3] = {v_vals[0], midBC_v, midCA_v};
-        checkTriangle(a, bezmidBC, bezmidCA, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[0], midBC_u, midCA_u};
+        float v_2[3] = {v_vals[0], midBC_v, midCA_v};
+        checkTriangle(a, bezmidBC, bezmidCA, u_2, v_2, depth,
                       out_v, out_n);
 
-        float u_vals3[3] = {u_vals[1], midBC_u, u_vals[0]};
-        float v_vals3[3] = {v_vals[1], midBC_v, v_vals[0]};
-        checkTriangle(b, bezmidBC, a, u_vals3, v_vals3,
+        float u_3[3] = {u_vals[1], midBC_u, u_vals[0]};
+        float v_3[3] = {v_vals[1], midBC_v, v_vals[0]};
+        checkTriangle(b, bezmidBC, a, u_3, v_3, depth,
                       out_v, out_n);
 
     } else if (splitCA && splitAB) {
-
-        float u_vals1[3] = {u_vals[0], midAB_u, midCA_u};
-        float v_vals1[3] = {v_vals[0], midAB_v, midCA_v};
-        checkTriangle(a, bezmidAB, bezmidCA, u_vals1, v_vals1,
+        //printf("split AB, CA\n\n");
+        float u_1[3] = {u_vals[0], midAB_u, midCA_u};
+        float v_1[3] = {v_vals[0], midAB_v, midCA_v};
+        checkTriangle(a, bezmidAB, bezmidCA, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[1], midCA_u, midAB_u};
-        float v_vals2[3] = {v_vals[1], midCA_v, midAB_v};
-        checkTriangle(b, bezmidCA, bezmidAB, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[1], midCA_u, midAB_u};
+        float v_2[3] = {v_vals[1], midCA_v, midAB_v};
+        checkTriangle(b, bezmidCA, bezmidAB, u_2, v_2, depth,
                       out_v, out_n);
 
-        float u_vals3[3] = {u_vals[2], midCA_u, u_vals[1]};
-        float v_vals3[3] = {v_vals[2], midCA_v, v_vals[1]};
-        checkTriangle(c, bezmidCA, b, u_vals3, v_vals3,
+        float u_3[3] = {u_vals[2], midCA_u, u_vals[1]};
+        float v_3[3] = {v_vals[2], midCA_v, v_vals[1]};
+        checkTriangle(c, bezmidCA, b, u_3, v_3, depth,
                       out_v, out_n);
         
     } else if (splitAB) {
-
-        float u_vals1[3] = {u_vals[0], midAB_u, u_vals[2]};
-        float v_vals1[3] = {v_vals[0], midAB_v, v_vals[2]};
-        checkTriangle(a, bezmidAB, c, u_vals1, v_vals1,
+        //printf("split AB\n\n");
+        float u_1[3] = {u_vals[0], midAB_u, u_vals[2]};
+        float v_1[3] = {v_vals[0], midAB_v, v_vals[2]};
+        checkTriangle(a, bezmidAB, c, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[1], u_vals[2], midAB_u};
-        float v_vals2[3] = {v_vals[1], v_vals[2], midAB_v};
-        checkTriangle(b, c, bezmidAB, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[1], u_vals[2], midAB_u};
+        float v_2[3] = {v_vals[1], v_vals[2], midAB_v};
+        checkTriangle(b, c, bezmidAB, u_2, v_2, depth,
                       out_v, out_n);
 
     } else if (splitBC) {
-
-        float u_vals1[3] = {u_vals[1], midBC_u, u_vals[0]};
-        float v_vals1[3] = {v_vals[1], midBC_v, v_vals[0]};
-        checkTriangle(b, bezmidBC, a, u_vals1, v_vals1,
+        //printf("split BC\n\n");
+        float u_1[3] = {u_vals[1], midBC_u, u_vals[0]};
+        float v_1[3] = {v_vals[1], midBC_v, v_vals[0]};
+        checkTriangle(b, bezmidBC, a, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[2], u_vals[0], midBC_u};
-        float v_vals2[3] = {v_vals[2], v_vals[0], midBC_v};
-        checkTriangle(c, a, bezmidBC, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[2], u_vals[0], midBC_u};
+        float v_2[3] = {v_vals[2], v_vals[0], midBC_v};
+        checkTriangle(c, a, bezmidBC, u_2, v_2, depth,
                       out_v, out_n);
 
     } else if (splitCA) {
-
-        float u_vals1[3] = {u_vals[2], midCA_u, u_vals[1]};
-        float v_vals1[3] = {v_vals[2], midCA_v, v_vals[1]};
-        checkTriangle(c, bezmidCA, b, u_vals1, v_vals1,
+        //printf("split CA\n\n");
+        float u_1[3] = {u_vals[2], midCA_u, u_vals[1]};
+        float v_1[3] = {v_vals[2], midCA_v, v_vals[1]};
+        checkTriangle(c, bezmidCA, b, u_1, v_1, depth,
                       out_v, out_n);
 
-        float u_vals2[3] = {u_vals[0], v_vals[1], midCA_u};
-        float v_vals2[3] = {v_vals[0], v_vals[1], midCA_v};
-        checkTriangle(a, b, bezmidCA, u_vals2, v_vals2,
+        float u_2[3] = {u_vals[0], v_vals[1], midCA_u};
+        float v_2[3] = {v_vals[0], v_vals[1], midCA_v};
+        checkTriangle(a, b, bezmidCA, u_2, v_2, depth,
                       out_v, out_n);
 
     } else {
         vec3 temp;
         vec3 a_norm; vec3 b_norm; vec3 c_norm;
-        
+        //printf("NO SPLIT\n\n");        
         bezpatchinterp(u_vals[0], v_vals[0], temp, a_norm);
         bezpatchinterp(u_vals[1], v_vals[1], temp, b_norm);
         bezpatchinterp(u_vals[2], v_vals[2], temp, c_norm);
@@ -280,13 +308,13 @@ void adaptiveSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
     float v_vals1[3] = {0, 0, 1};
     float u_vals1[3] = {0, 1, 0};
     checkTriangle(patch[0][0], patch[0][3], patch[3][0],
-                  u_vals1, v_vals1,
+                  u_vals1, v_vals1, 5,
                   out_v, out_n);
 
     float v_vals2[3] = {0, 1, 1};
     float u_vals2[3] = {1, 1, 0};
     checkTriangle(patch[0][3], patch[3][3], patch[3][0],
-                  u_vals2, v_vals2,
+                  u_vals2, v_vals2, 5,
                   out_v, out_n);
 }
 
