@@ -7,6 +7,11 @@
 
 using namespace std;
 
+vector<vector< vec3 > > patch;
+float param;
+int count = 0;
+
+/* bezier curve interpretation using De Casteljau's algorithm */
 vec3 bezcurveinterp(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float u, vec3 & dPdu) {
     vec3 A = c0 * (1.0f - u) + c1 * u;
     vec3 B = c1 * (1.0f - u) + c2 * u;
@@ -21,21 +26,28 @@ vec3 bezcurveinterp(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float u, vec3 & dPdu) {
 }
 
 /* given a control patch and (u, v) values, find the surface pt and norm */
-void bezpatchinterp(vector<vector< vec3 > > & p,
-                    float u, float v,
+void bezpatchinterp(float u, float v,
                     vec3 & ret_v,
                     vec3 & ret_n) {
     vec3 dPdv; vec3 dPdu;
 
-    vec3 vc0 = bezcurveinterp(p[0][0], p[0][1], p[0][2], p[0][3], u, dPdu);
-    vec3 vc1 = bezcurveinterp(p[1][0], p[1][1], p[1][2], p[1][3], u, dPdu);
-    vec3 vc2 = bezcurveinterp(p[2][0], p[2][1], p[2][2], p[2][3], u, dPdu);
-    vec3 vc3 = bezcurveinterp(p[3][0], p[3][1], p[3][2], p[3][3], u, dPdu);
+    vec3 vc0 = bezcurveinterp(patch[0][0], patch[0][1],
+                              patch[0][2], patch[0][3], u, dPdu);
+    vec3 vc1 = bezcurveinterp(patch[1][0], patch[1][1],
+                              patch[1][2], patch[1][3], u, dPdu);
+    vec3 vc2 = bezcurveinterp(patch[2][0], patch[2][1],
+                              patch[2][2], patch[2][3], u, dPdu);
+    vec3 vc3 = bezcurveinterp(patch[3][0], patch[3][1],
+                              patch[3][2], patch[3][3], u, dPdu);
 
-    vec3 uc0 = bezcurveinterp(p[0][0], p[1][0], p[2][0], p[3][0], v, dPdv);
-    vec3 uc1 = bezcurveinterp(p[0][1], p[1][1], p[2][1], p[3][1], v, dPdv);
-    vec3 uc2 = bezcurveinterp(p[0][2], p[1][2], p[2][2], p[3][2], v, dPdv);
-    vec3 uc3 = bezcurveinterp(p[0][3], p[1][3], p[2][3], p[3][3], v, dPdv);
+    vec3 uc0 = bezcurveinterp(patch[0][0], patch[1][0],
+                              patch[2][0], patch[3][0], v, dPdv);
+    vec3 uc1 = bezcurveinterp(patch[0][1], patch[1][1],
+                              patch[2][1], patch[3][1], v, dPdv);
+    vec3 uc2 = bezcurveinterp(patch[0][2], patch[1][2],
+                              patch[2][2], patch[3][2], v, dPdv);
+    vec3 uc3 = bezcurveinterp(patch[0][3], patch[1][3],
+                              patch[2][3], patch[3][3], v, dPdv);
 
     ret_v = bezcurveinterp(vc0, vc1, vc2, vc3, v, dPdv);
     bezcurveinterp(uc0, uc1, uc2, uc3, u, dPdu);
@@ -48,9 +60,9 @@ void bezpatchinterp(vector<vector< vec3 > > & p,
 }
                     
 /* uniform subdivision of a patch */
-void uniformSubdivision(vector<vector< vec3 > > & p, float step,
-                        vector<vec3> & out_v,
-                        vector<vec3> & out_n) {
+void uniformSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
+
+    float step = param;
 
     float numdiv = ((1.0f + 0.00001)/ step);
     vector<vector< vec3 > > temp_v;
@@ -67,7 +79,7 @@ void uniformSubdivision(vector<vector< vec3 > > & p, float step,
             float v = iv * step;
             if (numdiv - iv < 1.0) v = 1.0f;
             vec3 vector; vec3 normal;
-            bezpatchinterp(p, u, v, vector, normal);
+            bezpatchinterp(u, v, vector, normal);
             temp_rv.push_back(vector);
             temp_rn.push_back(normal);
         }
@@ -101,15 +113,185 @@ void uniformSubdivision(vector<vector< vec3 > > & p, float step,
 }
 
 
-/* adaptive subdivision of a patch */
-void adaptiveSubdivision(vector<vector< vec3 > > & p, float param,
-                        vector<vec3> & out_v,
-                        vector<vec3> & out_n) {
-    
+void checkTriangle(vec3 a, vec3 b, vec3 c,
+                   float u_vals[], float v_vals[],
+                   vector<vec3> & out_v, vector<vec3> & out_n) {
+
+    vec3 midAB = (a + b) * 0.5f;
+    vec3 midBC = (b + c) * 0.5f;
+    vec3 midCA = (c + a) * 0.5f;
+
+    float midAB_u = (u_vals[0] + u_vals[1]) / 2.0f;
+    float midAB_v = (v_vals[0] + v_vals[1]) / 2.0f;
+    vec3 bezmidAB; vec3 beznormAB;
+    bezpatchinterp(midAB_u, midAB_v, bezmidAB, beznormAB);
+
+    float midBC_u = (u_vals[1] + u_vals[2]) / 2.0f;
+    float midBC_v = (v_vals[1] + v_vals[2]) / 2.0f;
+    vec3 bezmidBC; vec3 beznormBC;
+    bezpatchinterp(midBC_u, midBC_v, bezmidBC, beznormBC);
+
+    float midCA_u = (u_vals[2] + u_vals[0]) / 2.0f;
+    float midCA_v = (v_vals[2] + v_vals[0]) / 2.0f;
+    vec3 bezmidCA; vec3 beznormCA;
+    bezpatchinterp(midCA_u, midCA_v, bezmidCA, beznormCA );
+
+    bool splitAB = glm::distance(midAB, bezmidAB) > param;
+    //printf("midAB: %f %f %f\tbezmidAB: %f %f %f\n\n", midAB.x, midAB.y, midAB.z, bezmidAB.x, bezmidAB.y, bezmidAB.z);
+    bool splitBC = glm::distance(midBC, bezmidBC) > param;
+    //printf("midBC: %f %f %f\tbezmidBC: %f %f %f\n\n", midBC.x, midBC.y, midBC.z, bezmidBC.x, bezmidBC.y, bezmidBC.z);
+    bool splitCA = glm::distance(midCA, bezmidCA) > param;
+    //printf("midCA: %f %f %f\tbezmidCA: %f %f %f\n\n", midCA.x, midCA.y, midCA.z, bezmidCA.x, bezmidCA.y, bezmidCA.z);
+
+    if (splitAB && splitBC && splitCA){
+
+        float u_vals1[3] = {u_vals[0], midAB_u, midCA_u};
+        float v_vals1[3] = {v_vals[0], midAB_v, midCA_v};
+        checkTriangle(a, bezmidAB, bezmidCA, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[1], midBC_u, midAB_u};
+        float v_vals2[3] = {v_vals[1], midBC_v, midAB_v};
+        checkTriangle(b, bezmidBC, bezmidAB, u_vals2, v_vals2,
+                      out_v, out_n);
+
+        float u_vals3[3] = {u_vals[2], midCA_u, midBC_u};
+        float v_vals3[3] = {v_vals[2], midCA_v, midBC_v};
+        checkTriangle(c, bezmidCA, bezmidBC, u_vals3, v_vals3,
+                      out_v, out_n);
+
+        float u_vals4[3] = {midAB_u, midBC_u, midCA_u};
+        float v_vals4[3] = {midAB_v, midBC_v, midCA_v};
+        checkTriangle(bezmidAB, bezmidBC, bezmidCA, u_vals4, v_vals4,
+                      out_v, out_n);
+        
+    } else if (splitAB && splitBC) {
+
+        float u_vals1[3] = {u_vals[1], midBC_u, midAB_u};
+        float v_vals1[3] = {v_vals[1], midBC_v, midAB_v};
+        checkTriangle(b, bezmidBC, bezmidAB, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[2], midAB_u, midBC_u};
+        float v_vals2[3] = {v_vals[2], midAB_v, midBC_v};
+        checkTriangle(c, bezmidAB, bezmidBC, u_vals2, v_vals2,
+                      out_v, out_n);
+
+        float u_vals3[3] = {u_vals[0], midAB_u, u_vals[2]};
+        float v_vals3[3] = {v_vals[0], midAB_v, v_vals[2]};
+        checkTriangle(a, bezmidAB, c, u_vals3, v_vals3,
+                      out_v, out_n);
+
+    } else if (splitBC && splitCA) {
+
+        float u_vals1[3] = {u_vals[2], midCA_u, midBC_u};
+        float v_vals1[3] = {v_vals[2], midCA_v, midBC_v};
+        checkTriangle(c, bezmidCA, bezmidBC, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[0], midBC_u, midCA_u};
+        float v_vals2[3] = {v_vals[0], midBC_v, midCA_v};
+        checkTriangle(a, bezmidBC, bezmidCA, u_vals2, v_vals2,
+                      out_v, out_n);
+
+        float u_vals3[3] = {u_vals[1], midBC_u, u_vals[0]};
+        float v_vals3[3] = {v_vals[1], midBC_v, v_vals[0]};
+        checkTriangle(b, bezmidBC, a, u_vals3, v_vals3,
+                      out_v, out_n);
+
+    } else if (splitCA && splitAB) {
+
+        float u_vals1[3] = {u_vals[0], midAB_u, midCA_u};
+        float v_vals1[3] = {v_vals[0], midAB_v, midCA_v};
+        checkTriangle(a, bezmidAB, bezmidCA, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[1], midCA_u, midAB_u};
+        float v_vals2[3] = {v_vals[1], midCA_v, midAB_v};
+        checkTriangle(b, bezmidCA, bezmidAB, u_vals2, v_vals2,
+                      out_v, out_n);
+
+        float u_vals3[3] = {u_vals[2], midCA_u, u_vals[1]};
+        float v_vals3[3] = {v_vals[2], midCA_v, v_vals[1]};
+        checkTriangle(c, bezmidCA, b, u_vals3, v_vals3,
+                      out_v, out_n);
+        
+    } else if (splitAB) {
+
+        float u_vals1[3] = {u_vals[0], midAB_u, u_vals[2]};
+        float v_vals1[3] = {v_vals[0], midAB_v, v_vals[2]};
+        checkTriangle(a, bezmidAB, c, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[1], u_vals[2], midAB_u};
+        float v_vals2[3] = {v_vals[1], v_vals[2], midAB_v};
+        checkTriangle(b, c, bezmidAB, u_vals2, v_vals2,
+                      out_v, out_n);
+
+    } else if (splitBC) {
+
+        float u_vals1[3] = {u_vals[1], midBC_u, u_vals[0]};
+        float v_vals1[3] = {v_vals[1], midBC_v, v_vals[0]};
+        checkTriangle(b, bezmidBC, a, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[2], u_vals[0], midBC_u};
+        float v_vals2[3] = {v_vals[2], v_vals[0], midBC_v};
+        checkTriangle(c, a, bezmidBC, u_vals2, v_vals2,
+                      out_v, out_n);
+
+    } else if (splitCA) {
+
+        float u_vals1[3] = {u_vals[2], midCA_u, u_vals[1]};
+        float v_vals1[3] = {v_vals[2], midCA_v, v_vals[1]};
+        checkTriangle(c, bezmidCA, b, u_vals1, v_vals1,
+                      out_v, out_n);
+
+        float u_vals2[3] = {u_vals[0], v_vals[1], midCA_u};
+        float v_vals2[3] = {v_vals[0], v_vals[1], midCA_v};
+        checkTriangle(a, b, bezmidCA, u_vals2, v_vals2,
+                      out_v, out_n);
+
+    } else {
+        vec3 temp;
+        vec3 a_norm; vec3 b_norm; vec3 c_norm;
+        
+        bezpatchinterp(u_vals[0], v_vals[0], temp, a_norm);
+        bezpatchinterp(u_vals[1], v_vals[1], temp, b_norm);
+        bezpatchinterp(u_vals[2], v_vals[2], temp, c_norm);
+        
+
+        out_v.push_back(a);
+        out_v.push_back(b);
+        out_v.push_back(c);
+
+        out_n.push_back(a_norm);
+        out_n.push_back(b_norm);
+        out_n.push_back(c_norm);
+        
+    }
+
 }
 
 
-bool loadBEZ(char* filename, float param, char* a,
+/* adaptive subdivision of a patch */
+void adaptiveSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
+
+    float v_vals1[3] = {0, 0, 1};
+    float u_vals1[3] = {0, 1, 0};
+    checkTriangle(patch[0][0], patch[0][3], patch[3][0],
+                  u_vals1, v_vals1,
+                  out_v, out_n);
+
+    float v_vals2[3] = {0, 1, 1};
+    float u_vals2[3] = {1, 1, 0};
+    checkTriangle(patch[0][3], patch[3][3], patch[3][0],
+                  u_vals2, v_vals2,
+                  out_v, out_n);
+}
+
+
+bool loadBEZ(char* filename, char* a,
              vector<vec3> & out_vertices,
              vector<vec3> & out_normals) {
 
@@ -119,7 +301,6 @@ bool loadBEZ(char* filename, float param, char* a,
         return false;
     }
 
-    vector<vector< vec3 > > patch;
     for (int i = 0; i < 4; i++) {
         vector<vec3> row;
         for (int j = 0; j < 4; j++) {
@@ -141,9 +322,9 @@ bool loadBEZ(char* filename, float param, char* a,
             }
 
             if (a != NULL && strcmp(a, "-a") == 0) {
-                adaptiveSubdivision(patch, param, out_vertices, out_normals);
+                adaptiveSubdivision(out_vertices, out_normals);
             } else {
-                uniformSubdivision(patch, param, out_vertices, out_normals);
+                uniformSubdivision(out_vertices, out_normals);
             }
 
         }
@@ -204,12 +385,12 @@ bool loadVertices(int argc, char** argv,
     if (strstr(filename, ".obj") != NULL) {
         return loadOBJ(filename, out_vertices, out_normals);
     } else if (strstr(filename, ".bez") != NULL) {
-        float param = (float) atof(argv[2]);
+        param = (float) atof(argv[2]);
 
         char* a;
         (argc > 3) ? a = argv[3] : a = NULL;
 
-        return loadBEZ(filename, param, a, out_vertices, out_normals);
+        return loadBEZ(filename, a, out_vertices, out_normals);
     } else {
         fprintf(stderr, "ERROR: '%s' format not supported\n", filename);
         return false;
