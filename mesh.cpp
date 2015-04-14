@@ -23,12 +23,9 @@ vec3 bezcurveinterp(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float u, vec3 & dPdu) {
 /* given a control patch and (u, v) values, find the surface pt and norm */
 void bezpatchinterp(vector<vector< vec3 > > & p,
                     float u, float v,
-                    vector<vec3> & out_v,
-                    vector<vec3> & out_n,
-                    vector<vec3> & temp_rv,
-                    vector<vec3> & temp_rn) {
-    vec3 dPdv = vec3(0.0,0.0,0.0);
-    vec3 dPdu = vec3(0.0,0.0,0.0);
+                    vec3 & ret_v,
+                    vec3 & ret_n) {
+    vec3 dPdv; vec3 dPdu;
 
     vec3 vc0 = bezcurveinterp(p[0][0], p[0][1], p[0][2], p[0][3], u, dPdu);
     vec3 vc1 = bezcurveinterp(p[1][0], p[1][1], p[1][2], p[1][3], u, dPdu);
@@ -40,13 +37,14 @@ void bezpatchinterp(vector<vector< vec3 > > & p,
     vec3 uc2 = bezcurveinterp(p[0][2], p[1][2], p[2][2], p[3][2], v, dPdv);
     vec3 uc3 = bezcurveinterp(p[0][3], p[1][3], p[2][3], p[3][3], v, dPdv);
 
-    vec3 point = bezcurveinterp(vc0, vc1, vc2, vc3, v, dPdv);
+    ret_v = bezcurveinterp(vc0, vc1, vc2, vc3, v, dPdv);
     bezcurveinterp(uc0, uc1, uc2, uc3, u, dPdu);
     
-    vec3 norm = glm::normalize(glm::cross(dPdu, dPdv));
+    glm::normalize(dPdv);
+    glm::normalize(dPdu);
 
-    temp_rv.push_back(point);
-    temp_rn.push_back(norm);
+    ret_n = glm::cross(dPdu, dPdv);
+
 }
                     
 /* uniform subdivision of a patch */
@@ -68,8 +66,10 @@ void uniformSubdivision(vector<vector< vec3 > > & p, float step,
         for (float iv = 0; iv < numdiv; iv += 1.0f) {
             float v = iv * step;
             if (numdiv - iv < 1.0) v = 1.0f;
-            
-            bezpatchinterp(p, u, v, out_v, out_n, temp_rv, temp_rn);
+            vec3 vector; vec3 normal;
+            bezpatchinterp(p, u, v, vector, normal);
+            temp_rv.push_back(vector);
+            temp_rn.push_back(normal);
         }
 
         temp_v.push_back(temp_rv);
@@ -79,6 +79,7 @@ void uniformSubdivision(vector<vector< vec3 > > & p, float step,
 
     for (int i = 0; i < temp_v.size() - 1; i++) {
         for (int j = 0; j < temp_v[i].size() - 1; j++) {
+            
             out_v.push_back(temp_v[i][j]);
             out_v.push_back(temp_v[i][j+1]);
             out_v.push_back(temp_v[i+1][j]);
@@ -94,7 +95,7 @@ void uniformSubdivision(vector<vector< vec3 > > & p, float step,
             out_n.push_back(temp_n[i][j+1]);
             out_n.push_back(temp_n[i+1][j+1]);
             out_n.push_back(temp_n[i+1][j]);
-
+            
         }
     }
 }
