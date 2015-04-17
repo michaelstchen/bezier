@@ -70,7 +70,7 @@ void renderScene() {
     glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &Model[0][0]);
     glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &View[0][0]);
 
-    vec3 lightPos = vec3(6, 5, -5);
+    vec3 lightPos = vec3(0, 3.5, -7);
     glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
 
     // 1st attribute buffer : vertices

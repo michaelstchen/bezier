@@ -3,7 +3,7 @@
 uniform mat4 MV;
 uniform vec3 LightPosition_worldspace;
 
-// from vertex shader
+// inputs
 in vec3 Position_worldspace;
 flat in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
@@ -16,7 +16,7 @@ void main(){
 
 	// Light properties
 	vec3 LightColor = vec3(1,1,1);
-	float LightPower = 30.0f;
+	float LightPower = 50.0f;
 	
 	// Material properties
 	vec3 MaterialDiffuseColor = vec3(1.0, 0.0, 0.0);

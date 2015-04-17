@@ -8,7 +8,7 @@
 bool wireframemode = false;
 bool flatshading = false;
 
-vec3 camPos = vec3(3, 3, -3);
+vec3 camPos = vec3(0, 0, -5);
 vec3 origin = vec3(0, 0, 0);
 vec3 up = vec3(0,1,0);
 vec3 right = glm::normalize(glm::cross(origin - camPos, up)); 
@@ -52,13 +52,13 @@ void specialKeys(int key, int x, int y) {
         if (mod == GLUT_ACTIVE_SHIFT) {
             viewMat = glm::translate(viewMat, 0.1f * up);
         } else {
-            modelMat = glm::rotate(mat4(1.0f), degToRad(2.0f), right) * modelMat;
+            modelMat = glm::rotate(mat4(1.0f), degToRad(-2.0f), right) * modelMat;
         }
     } else if (key == GLUT_KEY_DOWN) {
         if (mod == GLUT_ACTIVE_SHIFT) {
             viewMat = glm::translate(viewMat, -0.1f * up);
         } else {
-            modelMat = glm::rotate(mat4(1.0f), degToRad(-2.0f), right) * modelMat;
+            modelMat = glm::rotate(mat4(1.0f), degToRad(2.0f), right) * modelMat;
         }
     }
 }
