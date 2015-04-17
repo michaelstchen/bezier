@@ -9,6 +9,7 @@ using namespace std;
 
 vector<vector< vec3 > > patch;
 float param;
+int rec_depth = 5;
 mat4 Bz;
 
 /* bezier curve interpretation using De Casteljau's algorithm */
@@ -113,18 +114,6 @@ void uniformSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
 }
 
 
-bool samePoint(vec3 & v0, vec3 & v1) {
-    if (v0.x == v1.x) {
-        if (v0.y == v1.y) {
-            if (v0.z == v1.z) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 void checkTriangle(vec3 a, vec3 b, vec3 c,
                    float u_vals[], float v_vals[], int depth,
                    vector<vec3> & out_v, vector<vec3> & out_n) {
@@ -150,7 +139,7 @@ void checkTriangle(vec3 a, vec3 b, vec3 c,
 
     bool splitAB; bool splitBC; bool splitCA;
     if (depth < 0) {
-        //printf("depth: %d\n", depth);
+        //printf("\nmax recursion depth reached\n");
         splitAB = false;
         splitBC = false;
         splitCA = false;
@@ -288,7 +277,6 @@ void checkTriangle(vec3 a, vec3 b, vec3 c,
         bezpatchinterp(u_vals[1], v_vals[1], temp, b_norm);
         bezpatchinterp(u_vals[2], v_vals[2], temp, c_norm);
         
-
         out_v.push_back(a);
         out_v.push_back(b);
         out_v.push_back(c);
@@ -308,13 +296,13 @@ void adaptiveSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
     float v_vals1[3] = {0, 0, 1};
     float u_vals1[3] = {0, 1, 0};
     checkTriangle(patch[0][0], patch[0][3], patch[3][0],
-                  u_vals1, v_vals1, 5,
+                  u_vals1, v_vals1, rec_depth,
                   out_v, out_n);
 
     float v_vals2[3] = {0, 1, 1};
     float u_vals2[3] = {1, 1, 0};
     checkTriangle(patch[0][3], patch[3][3], patch[3][0],
-                  u_vals2, v_vals2, 5,
+                  u_vals2, v_vals2, rec_depth,
                   out_v, out_n);
 }
 

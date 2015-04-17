@@ -8,7 +8,7 @@
 bool wireframemode = false;
 bool flatshading = false;
 
-vec3 camPos = vec3(4, 3, -3);
+vec3 camPos = vec3(3, 3, -3);
 vec3 origin = vec3(0, 0, 0);
 vec3 up = vec3(0,1,0);
 vec3 right = glm::normalize(glm::cross(origin - camPos, up)); 
