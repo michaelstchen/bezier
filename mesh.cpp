@@ -10,7 +10,7 @@ using namespace std;
 
 vector<vector< vec3 > > patch;
 float param;
-int rec_depth = 1;
+int rec_depth = 10;
 
 Triangle::Triangle(Point* p0, Point* p1, Point* p2) {
     a = p0; b = p1; c = p2;
@@ -161,7 +161,7 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
 
     bool splitAB; bool splitBC; bool splitCA;
     if (depth < 0) {
-        //printf("\nmax recursion depth reached\n");
+        printf("\nmax recursion depth reached\n");
         splitAB = false; splitBC = false; splitCA = false;
     } else {
         depth -= 1;
@@ -239,13 +239,13 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
 void adaptiveSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
 
     Point a = Point(patch[0][0].x, patch[0][0].y, patch[0][0].z, 0, 0);
-    Point b = Point(patch[0][3].x, patch[0][3].y, patch[0][3].z, 0, 1);
-    Point c = Point(patch[3][3].x, patch[3][3].y, patch[3][3].z, 1, 1);
-    Point d = Point(patch[3][0].x, patch[3][0].y, patch[3][0].z, 1, 0);
-    checkTriangle(b, d, a, rec_depth,
+    Point b = Point(patch[3][0].x, patch[3][0].y, patch[3][0].z, 0, 1);
+    Point c = Point(patch[0][3].x, patch[0][3].y, patch[0][3].z, 1, 0);
+    Point d = Point(patch[3][3].x, patch[3][3].y, patch[3][3].z, 1, 1);
+    checkTriangle(a, b, c, rec_depth,
                   out_v, out_n);
 
-    checkTriangle(b, c, d, rec_depth,
+    checkTriangle(b, d, c, rec_depth,
                   out_v, out_n);
 }
 
