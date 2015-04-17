@@ -161,7 +161,7 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
 
     bool splitAB; bool splitBC; bool splitCA;
     if (depth < 0) {
-        printf("\nmax recursion depth reached\n");
+        //printf("\nmax recursion depth reached\n");
         splitAB = false; splitBC = false; splitCA = false;
     } else {
         depth -= 1;
@@ -173,60 +173,7 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
         //printf("midCA: %f %f %f\tbezmidCA: %f %f %f\n", midCA.x, midCA.y, midCA.z, bezmidCA.x, bezmidCA.y, bezmidCA.z);
     }
 
-    if (splitAB && splitBC && splitCA){
-        //printf("split AB, BC, CA\n\n");
-        checkTriangle(a, bezmidAB, bezmidCA, depth, out_v, out_n);
-
-        checkTriangle(b, bezmidBC, bezmidAB, depth, out_v, out_n);
-
-        checkTriangle(c, bezmidCA, bezmidBC, depth, out_v, out_n);
-
-        checkTriangle(bezmidAB, bezmidBC, bezmidCA, depth, out_v, out_n);
-        
-    } else if (splitAB && splitBC) {
-        //printf("split AB, BC\n\n");
-        checkTriangle(b, bezmidBC, bezmidAB, depth, out_v, out_n);
-
-        checkTriangle(c, bezmidAB, bezmidBC, depth, out_v, out_n);
-
-        checkTriangle(a, bezmidAB, c, depth, out_v, out_n);
-
-    } else if (splitBC && splitCA) {
-        //printf("split BC, CA\n\n");
-        checkTriangle(c, bezmidCA, bezmidBC, depth, out_v, out_n);
-
-        checkTriangle(a, bezmidBC, bezmidCA, depth, out_v, out_n);
-
-        checkTriangle(b, bezmidBC, a, depth,out_v, out_n);
-
-    } else if (splitCA && splitAB) {
-        //printf("split AB, CA\n\n");
-        checkTriangle(a, bezmidAB, bezmidCA,depth, out_v, out_n);
-
-        checkTriangle(b, bezmidCA, bezmidAB, depth, out_v, out_n);
-
-        checkTriangle(c, bezmidCA, b, depth, out_v, out_n);
-        
-    } else if (splitAB) {
-        //printf("split AB\n\n");
-        checkTriangle(a, bezmidAB, c, depth, out_v, out_n);
-
-        checkTriangle(b, c, bezmidAB, depth, out_v, out_n);
-
-    } else if (splitBC) {
-        //printf("split BC\n\n");
-        checkTriangle(b, bezmidBC, a, depth, out_v, out_n);
-
-        checkTriangle(c, a, bezmidBC, depth, out_v, out_n);
-
-    } else if (splitCA) {
-        //printf("split CA\n\n");
-        checkTriangle(c, bezmidCA, b, depth, out_v, out_n);
-
-        checkTriangle(a, b, bezmidCA, depth, out_v, out_n);
-
-    } else {
- 
+    if (!splitAB && !splitBC && !splitCA) {
         vec3 a_vert; vec3 b_vert; vec3 c_vert;
         vec3 a_norm; vec3 b_norm; vec3 c_norm;
         //printf("NO SPLIT\n\n");
@@ -242,6 +189,46 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
         out_n.push_back(a_norm);
         out_n.push_back(b_norm);
         out_n.push_back(c_norm);
+
+    } else if (splitAB && !splitBC && !splitCA) {
+        //printf("split AB\n\n");
+        checkTriangle(a, bezmidAB, c, depth, out_v, out_n);
+        checkTriangle(bezmidAB, b, c, depth, out_v, out_n);
+
+    } else if(!splitAB && splitBC && !splitCA) {
+        //printf("split BC\n\n");
+        checkTriangle(a, b, bezmidBC, depth, out_v, out_n);
+        checkTriangle(a, bezmidBC, c, depth, out_v, out_n);
+
+    } else if (!splitAB && !splitBC && splitCA) {
+        //printf("split CA\n\n");
+        checkTriangle(a, b, bezmidCA, depth, out_v, out_n);
+        checkTriangle(b, c, bezmidCA, depth, out_v, out_n);
+
+    } else if (splitAB && splitBC && !splitCA) {
+        //printf("split AB, BC\n\n");
+        checkTriangle(b, bezmidBC, bezmidAB, depth, out_v, out_n);
+        checkTriangle(c, a, bezmidBC, depth, out_v, out_n);
+        checkTriangle(a, bezmidAB, bezmidBC, depth, out_v, out_n);       
+
+    } else if (!splitAB && splitBC && splitCA) {
+        //printf("split BC, AB\n\n");
+        checkTriangle(a, b, bezmidCA, depth, out_v, out_n);
+        checkTriangle(bezmidCA, b, bezmidBC, depth, out_v, out_n);
+        checkTriangle(bezmidCA, bezmidBC, c, depth, out_v, out_n);        
+        
+    } else if (splitAB && !splitBC && splitCA) {
+        //printf("split AB, CA\n\n");
+        checkTriangle(a, bezmidAB, bezmidCA, depth, out_v, out_n);
+        checkTriangle(bezmidAB, b, c, depth, out_v, out_n);
+        checkTriangle(c, bezmidCA, bezmidAB, depth, out_v, out_n);
+
+    } else if (splitAB && splitBC && splitCA) {
+        //printf("split AB, BC, CA\n\n");
+        checkTriangle(a, bezmidAB, bezmidCA, depth, out_v, out_n);
+        checkTriangle(b, bezmidBC, bezmidAB, depth, out_v, out_n);
+        checkTriangle(c, bezmidCA, bezmidBC, depth, out_v, out_n);
+        checkTriangle(bezmidAB, bezmidBC, bezmidCA, depth, out_v, out_n);
 
     }
 
