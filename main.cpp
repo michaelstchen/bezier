@@ -19,8 +19,8 @@ using namespace glm;
 //****************************************************
 // Global variables
 //****************************************************
-int windowWidth = 800;
-int windowHeight = 600;
+int windowWidth = 1300;
+int windowHeight = 720;
 
 GLuint smoothprogram;
 GLuint flatprogram;
@@ -55,8 +55,8 @@ void renderScene() {
     GLuint LightID = glGetUniformLocation(programID,
                                           "LightPosition_worldspace");
 
-    // Projection matrix : 45° fov, 4:3 ratio, display range : 0.1-100 units
-    mat4 Projection = glm::perspective(degToRad(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
+    //mat4 Projection = glm::perspective(degToRad(45.0f), 4.0f/3.0f, 0.1f, 100.0f);
+    mat4 Projection = glm::ortho(-7.0f,7.0f,-4.0f,4.0f,0.0f,100.0f);
     // Camera matrix
     mat4 View = getViewMat();
     // Model matrix : an identity matrix (model will be at the origin)
