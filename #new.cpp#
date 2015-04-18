@@ -1,6 +1,0 @@
-        bezpatchinterp(a.u, a.v, a_vert, a_norm);
-        printf("a_norm: %f %f %f\n", a_norm.x, a_norm.y, a_norm.z);
-        bezpatchinterp(b.u, b.v, b_vert, b_norm);
-        printf("b_norm: %f %f %f\n", b_norm.x, b_norm.y, b_norm.z);
-        bezpatchinterp(c.u, c.v, c_vert, c_norm);
-        printf("c_norm: %f %f %f\n", c_norm.x, c_norm.y, c_norm.z);
