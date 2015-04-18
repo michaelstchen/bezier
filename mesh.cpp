@@ -78,13 +78,13 @@ void bezpatchinterp(float u, float v,
 
     ret_v = bezcurveinterp(vc0, vc1, vc2, vc3, v, dPdv);
     bezcurveinterp(uc0, uc1, uc2, uc3, u, dPdu);
-    
+    /*    
     if (dPdv.x == 0 && dPdv.y == 0 && dPdv.z == 0) {
         printf("BEFORE dPdv equals 0\n");
     } else if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
         printf("BEFORE dPdu equals 0\n");
     }
-
+    */
     if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
         
         vec3 vc0_0 = bezcurveinterp(patch[0][0], patch[0][1],
@@ -225,16 +225,16 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
     }
 
     if (!splitAB && !splitBC && !splitCA) {
-        printf("adding triangles\n");
+        //printf("adding triangles\n");
         vec3 a_vert; vec3 b_vert; vec3 c_vert;
         vec3 a_norm; vec3 b_norm; vec3 c_norm;
 
         bezpatchinterp(a.u, a.v, a_vert, a_norm);
-        printf("a_norm: %f %f %f\n", a_norm.x, a_norm.y, a_norm.z);
+        //printf("a_norm: %f %f %f\n", a_norm.x, a_norm.y, a_norm.z);
         bezpatchinterp(b.u, b.v, b_vert, b_norm);
-        printf("b_norm: %f %f %f\n", b_norm.x, b_norm.y, b_norm.z);
+        //printf("b_norm: %f %f %f\n", b_norm.x, b_norm.y, b_norm.z);
         bezpatchinterp(c.u, c.v, c_vert, c_norm);
-        printf("c_norm: %f %f %f\n\n", c_norm.x, c_norm.y, c_norm.z);
+        //printf("c_norm: %f %f %f\n\n", c_norm.x, c_norm.y, c_norm.z);
         
         out_v.push_back(a_vert);
         out_v.push_back(b_vert);

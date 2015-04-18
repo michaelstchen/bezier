@@ -1,0 +1,32 @@
+Author: Michael Stephen Chen
+Username: cs184-cw
+
+Platform: Linux
+
+Location: /home/cc/cs184/sp15/class/cs184-cw/Assignments/bezier
+
+Does not compile on the instructional machines. Make sure glm, glut,
+GLEW, and freeglut are all installed. Should compile with "make"
+if all these libraries are installed.
+      - glm was used for vector and matrix math
+      - glut, freeglut, and GLEW were used to create the
+        OpenGL viewing window.
+
+All of the code for initializing a window and for applying a shader borrowed
+heavily from the OpenGL/GLSL tutorials at the following sites:
+      - http://www.lighthouse3d.com/
+      - http://www.opengl-tutorial.org/
+
+The teacup control points were taken from:
+      - http://www.holmes3d.net/graphics/teapot/
+      *** IMPORTANT ***
+      The control points vertices for the teacup are stored in the reverse
+      order that my program uses. To get the correct shading, swap
+      "dPdu" and "dPdv" on line 140 of mesh.cpp.
+
+All required features are implemented.
+
+Optional Features Implemented:
+      - video of program in use (see website)
+      - reads and displays OBJ files
+      - implement a custom shader (see Shaders folder).
