@@ -12,6 +12,9 @@ if all these libraries are installed.
       - glut, freeglut, and GLEW were used to create the
         OpenGL viewing window.
 
+After compilation, run:
+      ./as3 [inputfile] [param] [-a]
+
 All of the code for initializing a window and for applying a shader borrowed
 heavily from the OpenGL/GLSL tutorials at the following sites:
       - http://www.lighthouse3d.com/
