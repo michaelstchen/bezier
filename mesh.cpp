@@ -56,33 +56,94 @@ vec3 bezcurveinterp(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float u, vec3 & dPdu) {
 void bezpatchinterp(float u, float v,
                     vec3 & ret_v,
                     vec3 & ret_n) {
-    vec3 dPdv; vec3 dPdu;
+    vec3 dPdv; vec3 dPdu; vec3 temp;
 
     vec3 vc0 = bezcurveinterp(patch[0][0], patch[0][1],
-                              patch[0][2], patch[0][3], u, dPdu);
+                              patch[0][2], patch[0][3], u, temp);
     vec3 vc1 = bezcurveinterp(patch[1][0], patch[1][1],
-                              patch[1][2], patch[1][3], u, dPdu);
+                              patch[1][2], patch[1][3], u, temp);
     vec3 vc2 = bezcurveinterp(patch[2][0], patch[2][1],
-                              patch[2][2], patch[2][3], u, dPdu);
+                              patch[2][2], patch[2][3], u, temp);
     vec3 vc3 = bezcurveinterp(patch[3][0], patch[3][1],
-                              patch[3][2], patch[3][3], u, dPdu);
+                              patch[3][2], patch[3][3], u, temp);
 
     vec3 uc0 = bezcurveinterp(patch[0][0], patch[1][0],
-                              patch[2][0], patch[3][0], v, dPdv);
+                              patch[2][0], patch[3][0], v, temp);
     vec3 uc1 = bezcurveinterp(patch[0][1], patch[1][1],
-                              patch[2][1], patch[3][1], v, dPdv);
+                              patch[2][1], patch[3][1], v, temp);
     vec3 uc2 = bezcurveinterp(patch[0][2], patch[1][2],
-                              patch[2][2], patch[3][2], v, dPdv);
+                              patch[2][2], patch[3][2], v, temp);
     vec3 uc3 = bezcurveinterp(patch[0][3], patch[1][3],
-                              patch[2][3], patch[3][3], v, dPdv);
+                              patch[2][3], patch[3][3], v, temp);
 
     ret_v = bezcurveinterp(vc0, vc1, vc2, vc3, v, dPdv);
     bezcurveinterp(uc0, uc1, uc2, uc3, u, dPdu);
     
+    if (dPdv.x == 0 && dPdv.y == 0 && dPdv.z == 0) {
+        printf("BEFORE dPdv equals 0\n");
+    } else if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
+        printf("BEFORE dPdu equals 0\n");
+    }
+
+    if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
+
+        vec3 vc0_0 = bezcurveinterp(patch[0][0], patch[0][1],
+                                  patch[0][2], patch[0][3], 0.0, temp);
+        vec3 vc1_0 = bezcurveinterp(patch[1][0], patch[1][1],
+                                  patch[1][2], patch[1][3], 0.0, temp);
+        vec3 vc2_0 = bezcurveinterp(patch[2][0], patch[2][1],
+                                  patch[2][2], patch[2][3], 0.0, temp);
+        vec3 vc3_0 = bezcurveinterp(patch[3][0], patch[3][1],
+                                  patch[3][2], patch[3][3], 0.0, temp);
+
+        vec3 vc0_1 = bezcurveinterp(patch[0][0], patch[0][1],
+                                  patch[0][2], patch[0][3], 1.0, temp);
+        vec3 vc1_1 = bezcurveinterp(patch[1][0], patch[1][1],
+                                  patch[1][2], patch[1][3], 1.0, temp);
+        vec3 vc2_1 = bezcurveinterp(patch[2][0], patch[2][1],
+                                  patch[2][2], patch[2][3], 1.0, temp);
+        vec3 vc3_1 = bezcurveinterp(patch[3][0], patch[3][1],
+                                  patch[3][2], patch[3][3], 1.0, temp);
+
+        bezcurveinterp(vc0_0, vc1_0, vc2_0, vc3_0, v, dPdv);
+        bezcurveinterp(vc0_1, vc1_1, vc2_1, vc3_1, v, dPdu);
+
+    } else if (dPdv.x == 0 && dPdv.y == 0 && dPdv.z == 0) {
+
+        vec3 uc0_0 = bezcurveinterp(patch[0][0], patch[1][0],
+                                  patch[2][0], patch[3][0], 0.0, temp);
+        vec3 uc1_0 = bezcurveinterp(patch[0][1], patch[1][1],
+                                  patch[2][1], patch[3][1], 0.0, temp);
+        vec3 uc2_0 = bezcurveinterp(patch[0][2], patch[1][2],
+                                  patch[2][2], patch[3][2], 0.0, temp);
+        vec3 uc3_0 = bezcurveinterp(patch[0][3], patch[1][3],
+                                  patch[2][3], patch[3][3], 0.0, temp);
+
+        vec3 uc0_1 = bezcurveinterp(patch[0][0], patch[1][0],
+                                  patch[2][0], patch[3][0], 1.0, temp);
+        vec3 uc1_1 = bezcurveinterp(patch[0][1], patch[1][1],
+                                  patch[2][1], patch[3][1], 1.0, temp);
+        vec3 uc2_1 = bezcurveinterp(patch[0][2], patch[1][2],
+                                  patch[2][2], patch[3][2], 1.0, temp);
+        vec3 uc3_1 = bezcurveinterp(patch[0][3], patch[1][3],
+                                  patch[2][3], patch[3][3], 1.0, temp);
+
+        bezcurveinterp(uc0_0, uc1_0, uc2_0, uc3_0, u, dPdu);
+        bezcurveinterp(uc0_1, uc1_1, uc2_1, uc3_1, u, dPdv);
+
+    }
+    
+    if (dPdv.x == 0 && dPdv.y == 0 && dPdv.z == 0) {
+        printf("dPdv equals 0\n");
+    } else if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
+        printf("dPdu equals 0\n");
+    }
+    
     glm::normalize(dPdv);
     glm::normalize(dPdu);
 
-    ret_n = glm::cross(dPdu, dPdv);
+    //ret_n = glm::cross(dPdu, dPdv);
+    ret_n = glm::normalize(glm::cross(dPdu, dPdv));
 
 }
                     
@@ -142,7 +203,6 @@ void uniformSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
 
 void checkTriangle(Point & a, Point & b, Point & c, int depth,
                    vector<vec3> & out_v, vector<vec3> & out_n) {
-
     Point midAB = midPoint(a, b);
     Point midBC = midPoint(b, c);
     Point midCA = midPoint(c, a);
@@ -161,26 +221,25 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
 
     bool splitAB; bool splitBC; bool splitCA;
     if (depth < 0) {
-        printf("\nmax recursion depth reached\n");
         splitAB = false; splitBC = false; splitCA = false;
     } else {
         depth -= 1;
         splitAB = distance_pts(midAB, bezmidAB) > param;
-        //printf("midAB: %f %f %f\tbezmidAB: %f %f %f\n", midAB.x, midAB.y, midAB.z, bezmidAB.x, bezmidAB.y, bezmidAB.z);
         splitBC = distance_pts(midBC, bezmidBC) > param;
-        //printf("midBC: %f %f %f\tbezmidBC: %f %f %f\n", midBC.x, midBC.y, midBC.z, bezmidBC.x, bezmidBC.y, bezmidBC.z);
         splitCA = distance_pts(midCA, bezmidCA) > param;
-        //printf("midCA: %f %f %f\tbezmidCA: %f %f %f\n", midCA.x, midCA.y, midCA.z, bezmidCA.x, bezmidCA.y, bezmidCA.z);
+
     }
 
     if (!splitAB && !splitBC && !splitCA) {
         vec3 a_vert; vec3 b_vert; vec3 c_vert;
         vec3 a_norm; vec3 b_norm; vec3 c_norm;
-        //printf("NO SPLIT\n\n");
 
         bezpatchinterp(a.u, a.v, a_vert, a_norm);
+        printf("a_norm: %f %f %f\n", a_norm.x, a_norm.y, a_norm.z);
         bezpatchinterp(b.u, b.v, b_vert, b_norm);
+        printf("b_norm: %f %f %f\n", b_norm.x, b_norm.y, b_norm.z);
         bezpatchinterp(c.u, c.v, c_vert, c_norm);
+        printf("c_norm: %f %f %f\n\n", c_norm.x, c_norm.y, c_norm.z);
         
         out_v.push_back(a_vert);
         out_v.push_back(b_vert);
@@ -191,40 +250,33 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
         out_n.push_back(c_norm);
 
     } else if (splitAB && !splitBC && !splitCA) {
-        //printf("split AB\n\n");
         checkTriangle(a, bezmidAB, c, depth, out_v, out_n);
         checkTriangle(bezmidAB, b, c, depth, out_v, out_n);
 
     } else if(!splitAB && splitBC && !splitCA) {
-        //printf("split BC\n\n");
         checkTriangle(a, b, bezmidBC, depth, out_v, out_n);
         checkTriangle(a, bezmidBC, c, depth, out_v, out_n);
 
     } else if (!splitAB && !splitBC && splitCA) {
-        //printf("split CA\n\n");
         checkTriangle(a, b, bezmidCA, depth, out_v, out_n);
         checkTriangle(b, c, bezmidCA, depth, out_v, out_n);
 
     } else if (splitAB && splitBC && !splitCA) {
-        //printf("split AB, BC\n\n");
         checkTriangle(b, bezmidBC, bezmidAB, depth, out_v, out_n);
         checkTriangle(c, a, bezmidBC, depth, out_v, out_n);
         checkTriangle(a, bezmidAB, bezmidBC, depth, out_v, out_n);       
 
     } else if (!splitAB && splitBC && splitCA) {
-        //printf("split BC, AB\n\n");
         checkTriangle(a, b, bezmidCA, depth, out_v, out_n);
         checkTriangle(bezmidCA, b, bezmidBC, depth, out_v, out_n);
         checkTriangle(bezmidCA, bezmidBC, c, depth, out_v, out_n);        
         
     } else if (splitAB && !splitBC && splitCA) {
-        //printf("split AB, CA\n\n");
         checkTriangle(a, bezmidAB, bezmidCA, depth, out_v, out_n);
         checkTriangle(bezmidAB, b, c, depth, out_v, out_n);
         checkTriangle(c, bezmidCA, bezmidAB, depth, out_v, out_n);
 
     } else if (splitAB && splitBC && splitCA) {
-        //printf("split AB, BC, CA\n\n");
         checkTriangle(a, bezmidAB, bezmidCA, depth, out_v, out_n);
         checkTriangle(b, bezmidBC, bezmidAB, depth, out_v, out_n);
         checkTriangle(c, bezmidCA, bezmidBC, depth, out_v, out_n);
