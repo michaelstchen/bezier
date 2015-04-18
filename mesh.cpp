@@ -86,7 +86,7 @@ void bezpatchinterp(float u, float v,
     }
 
     if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
-
+        
         vec3 vc0_0 = bezcurveinterp(patch[0][0], patch[0][1],
                                   patch[0][2], patch[0][3], 0.0, temp);
         vec3 vc1_0 = bezcurveinterp(patch[1][0], patch[1][1],
@@ -107,9 +107,9 @@ void bezpatchinterp(float u, float v,
 
         bezcurveinterp(vc0_0, vc1_0, vc2_0, vc3_0, v, dPdv);
         bezcurveinterp(vc0_1, vc1_1, vc2_1, vc3_1, v, dPdu);
-
+        
     } else if (dPdv.x == 0 && dPdv.y == 0 && dPdv.z == 0) {
-
+        
         vec3 uc0_0 = bezcurveinterp(patch[0][0], patch[1][0],
                                   patch[2][0], patch[3][0], 0.0, temp);
         vec3 uc1_0 = bezcurveinterp(patch[0][1], patch[1][1],
@@ -130,13 +130,7 @@ void bezpatchinterp(float u, float v,
 
         bezcurveinterp(uc0_0, uc1_0, uc2_0, uc3_0, u, dPdu);
         bezcurveinterp(uc0_1, uc1_1, uc2_1, uc3_1, u, dPdv);
-
-    }
-    
-    if (dPdv.x == 0 && dPdv.y == 0 && dPdv.z == 0) {
-        printf("dPdv equals 0\n");
-    } else if (dPdu.x == 0 && dPdu.y == 0 && dPdu.z == 0) {
-        printf("dPdu equals 0\n");
+        
     }
     
     glm::normalize(dPdv);
@@ -144,7 +138,7 @@ void bezpatchinterp(float u, float v,
 
     //ret_n = glm::cross(dPdu, dPdv);
     ret_n = glm::normalize(glm::cross(dPdu, dPdv));
-
+    
 }
                     
 /* uniform subdivision of a patch */
@@ -231,6 +225,7 @@ void checkTriangle(Point & a, Point & b, Point & c, int depth,
     }
 
     if (!splitAB && !splitBC && !splitCA) {
+        printf("adding triangles\n");
         vec3 a_vert; vec3 b_vert; vec3 c_vert;
         vec3 a_norm; vec3 b_norm; vec3 c_norm;
 
