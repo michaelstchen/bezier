@@ -1,3 +1,14 @@
+//****************************************************
+// Author: Michael Stephen Chen
+//
+// Description:
+//    A basic scene viewer that takes .obj and .bez files
+//    (specify bezier mesh control points) as inputs.
+//    subdivides bezier object according to input parameters.
+//    (see README). All OpenGL drawing done in main.cpp
+//
+//****************************************************
+
 #include <stdio.h>
 #include <string.h>
 #include <vector>
@@ -152,7 +163,7 @@ int main(int argc, char **argv) {
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
 
-    // Read and load info for vertices
+    // Read and load info for vertices (computes subdivisions if necessary)
     bool res = loadVertices(argc, argv, vertices, normals);
 
     glGenBuffers(1, &vertexbuffer);

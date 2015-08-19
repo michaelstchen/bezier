@@ -33,3 +33,7 @@ Optional Features Implemented:
       - video of program in use (see website)
       - reads and displays OBJ files
       - implement a custom shader (see Shaders folder).
+
+NOTE:
+        Check out the Images/ and Video/ folder to see what this
+        scene viewer can do.

@@ -1,3 +1,14 @@
+//***************************************************
+// Author: Michael Stephen Chen
+//
+// Description:
+//    Does all of the heavy-lifting for computing subdivisions
+//    (both uniform and adaptive). Also parses input files
+//    (.obj and .bez).
+//
+//****************************************************
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -194,7 +205,9 @@ void uniformSubdivision(vector<vec3> & out_v, vector<vec3> & out_n) {
     }
 }
 
-
+/* checks the given triangle (three points) to see if further subdivision
+ * is required or not.
+ */
 void checkTriangle(Point & a, Point & b, Point & c, int depth,
                    vector<vec3> & out_v, vector<vec3> & out_n) {
     Point midAB = midPoint(a, b);
