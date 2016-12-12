@@ -3,11 +3,8 @@ Username: cs184-cw
 
 Platform: Linux
 
-Location: /home/cc/cs184/sp15/class/cs184-cw/Assignments/bezier
-
-Does not compile on the instructional machines. Make sure glm, glut,
-GLEW, and freeglut are all installed. Should compile with "make"
-if all these libraries are installed.
+Make sure glm, glut, GLEW, and freeglut are all installed.
+Should compile with "make" if all these libraries are installed.
       - glm was used for vector and matrix math
       - glut, freeglut, and GLEW were used to create the
         OpenGL viewing window.
